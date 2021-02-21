@@ -1,5 +1,4 @@
-
 output "logs" {
-  value       = aws_cloudwatch_log_group.logs
+  value       = module.cloudwatch.logs
   description = "The Logs info"
 }

@@ -1,173 +1,139 @@
-# tf-scaffold
+# terraform-aws-s3
 
-This repository exists to help with new terraform projects, and with automation and training.
-The repository is designed to create the structure- scaffold that is alway needed for a new Terraform project.
-Included are the basic Github Actions.
-To clone scaffold repository but with no .git folder.
+[![Build Status](https://github.com/JamesWoolfenden/terraform-aws-s3/workflows/Verify%20and%20Bump/badge.svg?branch=master)](https://github.com/JamesWoolfenden/terraform-aws-s3)
+[![Latest Release](https://img.shields.io/github/release/JamesWoolfenden/terraform-aws-s3.svg)](https://github.com/JamesWoolfenden/terraform-aws-s3/releases/latest)
+[![GitHub tag (latest SemVer)](https://img.shields.io/github/tag/JamesWoolfenden/terraform-aws-s3.svg?label=latest)](https://github.com/JamesWoolfenden/terraform-aws-s3/releases/latest)
+![Terraform Version](https://img.shields.io/badge/tf-%3E%3D0.14.0-blue.svg)
+[![Infrastructure Tests](https://www.bridgecrew.cloud/badges/github/JamesWoolfenden/terraform-aws-s3/cis_aws)](https://www.bridgecrew.cloud/link/badge?vcs=github&fullRepo=JamesWoolfenden%2Fterraform-aws-s3&benchmark=CIS+AWS+V1.2)
+[![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://github.com/pre-commit/pre-commit)
+[![checkov](https://img.shields.io/badge/checkov-verified-brightgreen)](https://www.checkov.io/)
+[![Infrastructure Tests](https://www.bridgecrew.cloud/badges/github/jameswoolfenden/terraform-aws-s3/general)](https://www.bridgecrew.cloud/link/badge?vcs=github&fullRepo=JamesWoolfenden%2Fterraform-aws-s3&benchmark=INFRASTRUCTURE+SECURITY)
 
-## Powershell
+This ia a Terraform module to provision a secure Terraform S3 bucket. It also has a provisioning test included in its' Github actions so you can be sure each labelled version works.
 
-```powershell
-git clone --depth=1 git@github.com:JamesWoolfenden/tf-scaffold.git scaffold
-rm scaffold\.git -recurse -force
-```
+---
 
-Edit your profile and add:
-
-```powershell
-function scaffold {
-   param(
-         [parameter(mandatory=$true)]
-         [string]$name,
-         [string]$branch="master")
-   git clone --depth=1 --branch=$branch git@github.com:JamesWoolfenden/tf-scaffold.git "$name"
-   rm "$name\.git" -recurse -force
-}
-```
-
-or
-
-```powershell
-function scaffold {
-   param(
-         [parameter(mandatory=$true)]
-         [string]$name,
-         [string]$branch="master",
-         [switch]$repo=$false)
-
-   if (!(test-path .\$name))
-   {
-       git clone --depth=1 --branch=$branch git@github.com:JamesWoolfenden/tf-scaffold.git "$name"
-   }
-   else{
-      write-warning "Path $name already exists"
-      return
-   }
-
-   rm "$name\.git" -recurse -force
-   cd $name
-   echo "# %name" >README.md
-   if ($repo)
-   {
-      git init|git add -A
-      pre-commit install
-      git commit -m "Initial Draft"
-   }
-}
-```
-
-Then you can use:
-
-```powershell
-scaffold -name hello-world
-```
-
-or to start a new git repo as well:
-
-```powershell
-scaffold -name hello-world -repo
-```
-
-To make a new project anytime you like.
-
-## \*Nix
-
-```cli
-git clone --depth=1 git@github.com:JamesWoolfenden/tf-scaffold.git scaffold| rm !$/.git -rf
-```
-
-Or you add this to your ~/.bashrc
-
-```bash
-function scaffold() {
-if [ -z "$1" ]
-then
-   name="scaffold"
-else
-   name=$1
-fi
-
-if [ -z "$2" ]
-then
-   branch="master"
-else
-   branch=$2
-fi
-
-
-echo "git clone --depth=1 --branch $branch git@github.com:JamesWoolfenden/tf-scaffold.git $name"
-git clone --depth=1 --branch $branch git@github.com:JamesWoolfenden/tf-scaffold.git $name
-rm $name/.git -rf
-}
-```
+It's 100% Open Source and licensed under the [APACHE2](LICENSE).
 
 ## Usage
 
-Once it's in your profile, pretty straigh forward:
+Include this repository as a module in your existing Terraform code:
 
-```cli
- $ scaffold terraform-aws-generic
-git clone --depth=1 git@github.com:JamesWoolfenden/tf-scaffold.git terraform-aws-generic
-Cloning into 'terraform-aws-generic'...
-remote: Enumerating objects: 14, done.
-remote: Counting objects: 100% (14/14), done.
-remote: Compressing objects: 100% (9/9), done.
-remote: Total 14 (delta 0), reused 10 (delta 0), pack-reused 0
-Receiving objects: 100% (14/14), done.
+```terraform
+module "s3" {
+  source                  = "JamesWoolfenden/s3/aws"
+  version                 = "0.4.0"
+  s3_bucket_force_destroy = var.s3_bucket_force_destroy
+  s3_bucket_name          = var.s3_bucket_name
+  s3_bucket_policy        = data.aws_iam_policy_document.s3_policy.json
+  common_tags             = var.common_tags
+}
 ```
 
-## So what's in it
+This creates an S3 bucket with policy and applies the common tags scheme.
+The module uses a tagging scheme based on the map variable common_tags.
+This needs to consist of as a minimum (in your ***.auto.tfvars**):
 
-### .gitignore
-
-Has good defaults for working with Terraform
-
-### .pre-commit-config.yaml
-
-Has a standard set of pre-commit hooks for working with Terraform and AWS. You'll need to install the pre-commit framework <https://pre-commit.com/#install>.
-And after youve added all these file to your new repo, in the root of your new repository:
-
-```cli
-pre-commit install
+```HCL
+common_tags = {
+    application = "Terraform"
+    module      = "S3"
+}
 ```
-
-### main.tf
-
-This is an expected file for Terraform modules. I don't use it.
-
-### Makefile
-
-This is just to make like easier for you. Problematic if you are cross platform as make isn't very good/awful at that.
-
-### outputs.tf
-
-A standard place to return values, either to the screen or to pass back from a module.
-
-### provider.aws.tf
-
-You are always going to be using these, I have added the most basic provider for AWS.
-
-### README.md
-
-Where all the information goes.
-
-### main.auto.tfvars
-
-This is the standard file for setting your variables in. The auto keyword ensures its picked up and used by Terraform.
-
-### variables.tf
-
-Contains a map variable **common_tags** which should be extended and used on
-every taggable object.
-
-### .dependsabot/config.yml
-
-Sets the repository to be automatically dependency scanned in github.
-
-## terraform-docs
-
-If you leave the section below in your **README.md** then the pre-commit will auto update your docs.
 
 <!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
-Error: no lines in file
+## Requirements
+
+No requirements.
+
+## Providers
+
+| Name | Version |
+|------|---------|
+| aws | n/a |
+
+## Modules
+
+No Modules.
+
+## Resources
+
+| Name |
+|------|
+| [aws_cloudwatch_log_group](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudwatch_log_group) |
+
+## Inputs
+
+| Name | Description | Type | Default | Required |
+|------|-------------|------|---------|:--------:|
+| common\_tags | This is to help you add tags to your cloud objects | `map(any)` | n/a | yes |
+| log\_group\_name | n/a | `string` | `"test_logs"` | no |
+
+## Outputs
+
+| Name | Description |
+|------|-------------|
+| logs | The Logs info |
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
+
+## Instructions
+
+## Related Projects
+
+Check out these related projects.
+
+- [terraform-aws-statebucket](https://github.com/jameswoolfenden/terraform-aws-statebucket) - Terraform s3 state buckets
+
+## Help
+
+**Got a question?**
+
+File a GitHub [issue](https://github.com/JamesWoolfenden/terraform-aws-3/issues).
+
+## Contributing
+
+### Bug Reports & Feature Requests
+
+Please use the [issue tracker](https://github.com/JamesWoolfenden/terraform-aws-3/issues) to report any bugs or file feature requests.
+
+## Copyrights
+
+Copyright 2019-2021 James Woolfenden
+
+## License
+
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+
+See [LICENSE](LICENSE) for full details.
+
+Licensed to the Apache Software Foundation (ASF) under one
+or more contributor license agreements. See the NOTICE file
+distributed with this work for additional information
+regarding copyright ownership. The ASF licenses this file
+to you under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance
+with the License. You may obtain a copy of the License at
+
+<https://www.apache.org/licenses/LICENSE-2.0>
+
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied. See the License for the
+specific language governing permissions and limitations
+under the License.
+
+### Contributors
+
+[![James Woolfenden][jameswoolfenden_avatar]][jameswoolfenden_homepage]<br/>[James Woolfenden][jameswoolfenden_homepage]
+
+[jameswoolfenden_homepage]: https://github.com/jameswoolfenden
+[jameswoolfenden_avatar]: https://github.com/jameswoolfenden.png?size=150
+[github]: https://github.com/jameswoolfenden
+[linkedin]: https://www.linkedin.com/in/jameswoolfenden/
+[twitter]: https://twitter.com/JimWoolfenden
+[share_twitter]: https://twitter.com/intent/tweet/?text=terraform-aws-s3&url=https://github.com/JamesWoolfenden/terraform-aws-3
+[share_linkedin]: https://www.linkedin.com/shareArticle?mini=true&title=terraform-aws-s3&url=https://github.com/JamesWoolfenden/terraform-aws-3
+[share_reddit]: https://reddit.com/submit/?url=https://github.com/JamesWoolfenden/terraform-aws-3
+[share_facebook]: https://facebook.com/sharer/sharer.php?u=https://github.com/JamesWoolfenden/terraform-aws-3
+[share_email]: mailto:?subject=terraform-aws-s3&body=https://github.com/JamesWoolfenden/terraform-aws-3
