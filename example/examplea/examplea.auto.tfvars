@@ -1,6 +1,6 @@
 common_tags = {
   createby = "terraform"
-  module   = "s3"
+  module   = "terraform-aws-cloudwatch"
 }
 s3_bucket_force_destroy = "false"
 s3_bucket_name          = "testjgw"
