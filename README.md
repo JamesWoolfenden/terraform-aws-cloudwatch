@@ -1,13 +1,13 @@
-# terraform-aws-s3
+# terraform-aws-cloudwatch
 
-[![Build Status](https://github.com/JamesWoolfenden/terraform-aws-s3/workflows/Verify%20and%20Bump/badge.svg?branch=master)](https://github.com/JamesWoolfenden/terraform-aws-s3)
-[![Latest Release](https://img.shields.io/github/release/JamesWoolfenden/terraform-aws-s3.svg)](https://github.com/JamesWoolfenden/terraform-aws-s3/releases/latest)
-[![GitHub tag (latest SemVer)](https://img.shields.io/github/tag/JamesWoolfenden/terraform-aws-s3.svg?label=latest)](https://github.com/JamesWoolfenden/terraform-aws-s3/releases/latest)
+[![Build Status](https://github.com/JamesWoolfenden/terraform-aws-cloudwatch/workflows/Verify%20and%20Bump/badge.svg?branch=master)](https://github.com/JamesWoolfenden/terraform-aws-cloudwatch)
+[![Latest Release](https://img.shields.io/github/release/JamesWoolfenden/terraform-aws-cloudwatch.svg)](https://github.com/JamesWoolfenden/terraform-aws-cloudwatch/releases/latest)
+[![GitHub tag (latest SemVer)](https://img.shields.io/github/tag/JamesWoolfenden/terraform-aws-cloudwatch.svg?label=latest)](https://github.com/JamesWoolfenden/terraform-aws-cloudwatch/releases/latest)
 ![Terraform Version](https://img.shields.io/badge/tf-%3E%3D0.14.0-blue.svg)
-[![Infrastructure Tests](https://www.bridgecrew.cloud/badges/github/JamesWoolfenden/terraform-aws-s3/cis_aws)](https://www.bridgecrew.cloud/link/badge?vcs=github&fullRepo=JamesWoolfenden%2Fterraform-aws-s3&benchmark=CIS+AWS+V1.2)
+[![Infrastructure Tests](https://www.bridgecrew.cloud/badges/github/JamesWoolfenden/terraform-aws-cloudwatch/cis_aws)](https://www.bridgecrew.cloud/link/badge?vcs=github&fullRepo=JamesWoolfenden%2Fterraform-aws-cloudwatch&benchmark=CIS+AWS+V1.2)
 [![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://github.com/pre-commit/pre-commit)
 [![checkov](https://img.shields.io/badge/checkov-verified-brightgreen)](https://www.checkov.io/)
-[![Infrastructure Tests](https://www.bridgecrew.cloud/badges/github/jameswoolfenden/terraform-aws-s3/general)](https://www.bridgecrew.cloud/link/badge?vcs=github&fullRepo=JamesWoolfenden%2Fterraform-aws-s3&benchmark=INFRASTRUCTURE+SECURITY)
+[![Infrastructure Tests](https://www.bridgecrew.cloud/badges/github/jameswoolfenden/terraform-aws-cloudwatch/general)](https://www.bridgecrew.cloud/link/badge?vcs=github&fullRepo=JamesWoolfenden%2Fterraform-aws-cloudwatch&benchmark=INFRASTRUCTURE+SECURITY)
 
 This ia a Terraform module to provision a secure Terraform S3 bucket. It also has a provisioning test included in its' Github actions so you can be sure each labelled version works.
 
@@ -20,24 +20,9 @@ It's 100% Open Source and licensed under the [APACHE2](LICENSE).
 Include this repository as a module in your existing Terraform code:
 
 ```terraform
-module "s3" {
-  source                  = "JamesWoolfenden/s3/aws"
+module "cloudwatch" {
+  source                  = "JamesWoolfenden/cloudwatch/aws"
   version                 = "0.4.0"
-  s3_bucket_force_destroy = var.s3_bucket_force_destroy
-  s3_bucket_name          = var.s3_bucket_name
-  s3_bucket_policy        = data.aws_iam_policy_document.s3_policy.json
-  common_tags             = var.common_tags
-}
-```
-
-This creates an S3 bucket with policy and applies the common tags scheme.
-The module uses a tagging scheme based on the map variable common_tags.
-This needs to consist of as a minimum (in your ***.auto.tfvars**):
-
-```HCL
-common_tags = {
-    application = "Terraform"
-    module      = "S3"
 }
 ```
 
@@ -132,8 +117,8 @@ under the License.
 [github]: https://github.com/jameswoolfenden
 [linkedin]: https://www.linkedin.com/in/jameswoolfenden/
 [twitter]: https://twitter.com/JimWoolfenden
-[share_twitter]: https://twitter.com/intent/tweet/?text=terraform-aws-s3&url=https://github.com/JamesWoolfenden/terraform-aws-3
-[share_linkedin]: https://www.linkedin.com/shareArticle?mini=true&title=terraform-aws-s3&url=https://github.com/JamesWoolfenden/terraform-aws-3
+[share_twitter]: https://twitter.com/intent/tweet/?text=terraform-aws-cloudwatch&url=https://github.com/JamesWoolfenden/terraform-aws-3
+[share_linkedin]: https://www.linkedin.com/shareArticle?mini=true&title=terraform-aws-cloudwatch&url=https://github.com/JamesWoolfenden/terraform-aws-3
 [share_reddit]: https://reddit.com/submit/?url=https://github.com/JamesWoolfenden/terraform-aws-3
 [share_facebook]: https://facebook.com/sharer/sharer.php?u=https://github.com/JamesWoolfenden/terraform-aws-3
-[share_email]: mailto:?subject=terraform-aws-s3&body=https://github.com/JamesWoolfenden/terraform-aws-3
+[share_email]: mailto:?subject=terraform-aws-cloudwatch&body=https://github.com/JamesWoolfenden/terraform-aws-3
