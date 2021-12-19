@@ -53,6 +53,7 @@ No modules.
 |------|-------------|------|---------|:--------:|
 | <a name="input_common_tags"></a> [common\_tags](#input\_common\_tags) | This is to help you add tags to your cloud objects | `map(any)` | n/a | yes |
 | <a name="input_log_group_name"></a> [log\_group\_name](#input\_log\_group\_name) | n/a | `string` | `"test_logs"` | no |
+| <a name="input_retention"></a> [retention](#input\_retention) | Log retention in days | `number` | `14` | no |
 
 ## Outputs
 
