@@ -14,3 +14,7 @@ variable "retention" {
   type        = number
   default     = 14
 }
+
+variable "kms_key_id" {
+  type = string
+}
