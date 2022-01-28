@@ -27,16 +27,15 @@ module "cloudwatch" {
 ```
 
 <!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
-
 ## Requirements
 
 No requirements.
 
 ## Providers
 
-| Name                                             | Version |
-| ------------------------------------------------ | ------- |
-| <a name="provider_aws"></a> [aws](#provider_aws) | n/a     |
+| Name | Version |
+|------|---------|
+| <a name="provider_aws"></a> [aws](#provider\_aws) | n/a |
 
 ## Modules
 
@@ -44,25 +43,24 @@ No modules.
 
 ## Resources
 
-| Name                                                                                                                              | Type     |
-| --------------------------------------------------------------------------------------------------------------------------------- | -------- |
+| Name | Type |
+|------|------|
 | [aws_cloudwatch_log_group.logs](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudwatch_log_group) | resource |
 
 ## Inputs
 
-| Name                                                                        | Description                                        | Type       | Default       | Required |
-| --------------------------------------------------------------------------- | -------------------------------------------------- | ---------- | ------------- | :------: |
-| <a name="input_common_tags"></a> [common_tags](#input_common_tags)          | This is to help you add tags to your cloud objects | `map(any)` | n/a           |   yes    |
-| <a name="input_kms_key_id"></a> [kms_key_id](#input_kms_key_id)             | n/a                                                | `string`   | n/a           |   yes    |
-| <a name="input_log_group_name"></a> [log_group_name](#input_log_group_name) | n/a                                                | `string`   | `"test_logs"` |    no    |
-| <a name="input_retention"></a> [retention](#input_retention)                | Log retention in days                              | `number`   | `14`          |    no    |
+| Name | Description | Type | Default | Required |
+|------|-------------|------|---------|:--------:|
+| <a name="input_common_tags"></a> [common\_tags](#input\_common\_tags) | This is to help you add tags to your cloud objects | `map(any)` | n/a | yes |
+| <a name="input_kms_key_id"></a> [kms\_key\_id](#input\_kms\_key\_id) | n/a | `string` | n/a | yes |
+| <a name="input_log_group_name"></a> [log\_group\_name](#input\_log\_group\_name) | n/a | `string` | `"test_logs"` | no |
+| <a name="input_retention"></a> [retention](#input\_retention) | Log retention in days | `number` | `14` | no |
 
 ## Outputs
 
-| Name                                            | Description   |
-| ----------------------------------------------- | ------------- |
-| <a name="output_logs"></a> [logs](#output_logs) | The Logs info |
-
+| Name | Description |
+|------|-------------|
+| <a name="output_logs"></a> [logs](#output\_logs) | The Logs info |
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 
 ## Instructions
