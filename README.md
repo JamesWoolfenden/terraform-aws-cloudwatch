@@ -89,12 +89,15 @@ resource "aws_iam_policy" "terraform_pike" {
                 "logs:DeleteRetentionPolicy",
                 "logs:DescribeLogGroups",
                 "logs:DisassociateKmsKey",
+                "logs:ListTagsForResource",
                 "logs:ListTagsLogGroup",
                 "logs:PutRetentionPolicy",
                 "logs:TagLogGroup",
                 "logs:UntagLogGroup"
             ],
-            "Resource": "*"
+            "Resource": [
+                "*"
+            ]
         }
     ]
 })
