@@ -4,10 +4,8 @@
 [![Latest Release](https://img.shields.io/github/release/JamesWoolfenden/terraform-aws-cloudwatch.svg)](https://github.com/JamesWoolfenden/terraform-aws-cloudwatch/releases/latest)
 [![GitHub tag (latest SemVer)](https://img.shields.io/github/tag/JamesWoolfenden/terraform-aws-cloudwatch.svg?label=latest)](https://github.com/JamesWoolfenden/terraform-aws-cloudwatch/releases/latest)
 ![Terraform Version](https://img.shields.io/badge/tf-%3E%3D0.14.0-blue.svg)
-[![Infrastructure Tests](https://www.bridgecrew.cloud/badges/github/JamesWoolfenden/terraform-aws-cloudwatch/cis_aws)](https://www.bridgecrew.cloud/link/badge?vcs=github&fullRepo=JamesWoolfenden%2Fterraform-aws-cloudwatch&benchmark=CIS+AWS+V1.2)
 [![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://github.com/pre-commit/pre-commit)
 [![checkov](https://img.shields.io/badge/checkov-verified-brightgreen)](https://www.checkov.io/)
-[![Infrastructure Tests](https://www.bridgecrew.cloud/badges/github/jameswoolfenden/terraform-aws-cloudwatch/general)](https://www.bridgecrew.cloud/link/badge?vcs=github&fullRepo=JamesWoolfenden%2Fterraform-aws-cloudwatch&benchmark=INFRASTRUCTURE+SECURITY)
 
 This ia a Terraform module to provision a secure Terraform S3 bucket. It also has a provisioning test included in its' Github actions so you can be sure each labelled version works.
 
@@ -34,7 +32,7 @@ No requirements.
 ## Providers
 
 | Name | Version |
-|------|---------|
+| ---- | ------- |
 | <a name="provider_aws"></a> [aws](#provider\_aws) | n/a |
 
 ## Modules
@@ -44,22 +42,22 @@ No modules.
 ## Resources
 
 | Name | Type |
-|------|------|
+| ---- | ---- |
 | [aws_cloudwatch_log_group.logs](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudwatch_log_group) | resource |
 
 ## Inputs
 
 | Name | Description | Type | Default | Required |
-|------|-------------|------|---------|:--------:|
+| ---- | ----------- | ---- | ------- | :------: |
 | <a name="input_common_tags"></a> [common\_tags](#input\_common\_tags) | This is to help you add tags to your cloud objects | `map(any)` | n/a | yes |
 | <a name="input_kms_key_id"></a> [kms\_key\_id](#input\_kms\_key\_id) | n/a | `string` | n/a | yes |
 | <a name="input_log_group_name"></a> [log\_group\_name](#input\_log\_group\_name) | n/a | `string` | `"test_logs"` | no |
-| <a name="input_retention"></a> [retention](#input\_retention) | Log retention in days | `number` | `14` | no |
+| <a name="input_retention"></a> [retention](#input\_retention) | Log retention in days | `number` | `365` | no |
 
 ## Outputs
 
 | Name | Description |
-|------|-------------|
+| ---- | ----------- |
 | <a name="output_logs"></a> [logs](#output\_logs) | The Logs info |
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 
@@ -127,7 +125,7 @@ Please use the [issue tracker](https://github.com/JamesWoolfenden/terraform-aws-
 
 ## Copyrights
 
-Copyright © 2019-2022 James Woolfenden
+Copyright © 2019-2026 James Woolfenden
 
 ## License
 

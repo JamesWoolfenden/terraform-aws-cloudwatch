@@ -12,7 +12,7 @@ variable "log_group_name" {
 variable "retention" {
   description = "Log retention in days"
   type        = number
-  default     = 14
+  default     = 365
 }
 
 variable "kms_key_id" {
