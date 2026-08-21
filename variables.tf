@@ -116,6 +116,16 @@ variable "metric_filters" {
     ])
     error_message = "Each alarm.period must be 10, 30, or a multiple of 60 seconds."
   }
+
+  # An alarm with actions enabled but no action changes state silently and
+  # notifies nobody. Set actions_enabled = false to declare that deliberately.
+  validation {
+    condition = alltrue([
+      for f in values(var.metric_filters) :
+      try(f.alarm.actions_enabled, false) == false || length(try(f.alarm.alarm_actions, [])) > 0
+    ])
+    error_message = "Each alarm with actions_enabled = true must set at least one alarm_actions entry, otherwise it can never notify anyone. Set actions_enabled = false for an alarm that is deliberately silent."
+  }
 }
 
 variable "subscription_filters" {

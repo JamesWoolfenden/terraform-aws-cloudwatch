@@ -29,6 +29,23 @@ resource "aws_kms_key" "cloudwatch_logs" {
             "kms:EncryptionContext:aws:logs:arn" = "arn:aws:logs:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:log-group:*"
           }
         }
+      },
+      {
+        Sid    = "AllowSNSAndCloudWatchAlarms"
+        Effect = "Allow"
+        Principal = {
+          Service = ["sns.amazonaws.com", "cloudwatch.amazonaws.com"]
+        }
+        Action = ["kms:Decrypt", "kms:GenerateDataKey*"]
+        # Scoped to this account: a service principal carries no account
+        # identity, so without this the grant would extend to the service
+        # acting on behalf of any account. Same reasoning as HLD_AWS_317.
+        Resource = "*"
+        Condition = {
+          StringEquals = {
+            "aws:SourceAccount" = data.aws_caller_identity.current.account_id
+          }
+        }
       }
     ]
   })

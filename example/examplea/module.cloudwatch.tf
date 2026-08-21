@@ -19,6 +19,8 @@ module "cloudwatch" {
         threshold          = 5
         description        = "More than five ERROR lines in five minutes"
         treat_missing_data = "notBreaching"
+        alarm_actions      = [aws_sns_topic.alerts.arn]
+        ok_actions         = [aws_sns_topic.alerts.arn]
       }
     }
   }
