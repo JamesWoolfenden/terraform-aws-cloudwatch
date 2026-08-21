@@ -1,0 +1,5 @@
+suppressions:
+  - module: module.cloudwatch
+    policy_id: HLD_AWS_318
+    reason: "Example fixture: CI runs terraform destroy against this example, so the module is deliberately called with deletion_protection_enabled = false. The module itself defaults to true."
+    approved_by: jameswoolfenden

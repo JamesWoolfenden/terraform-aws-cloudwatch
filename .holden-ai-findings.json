@@ -1,0 +1,118 @@
+{
+  "findings": [
+    {
+      "confidence": "high",
+      "explanation": "The AllowCloudWatchLogs statement grants kms:Encrypt*/Decrypt*/ReEncrypt*/GenerateDataKey*/Describe* to the service principal logs.<region>.amazonaws.com on Resource \"*\" with no Condition block. A service principal carries no account identity, so the grant authorises the CloudWatch Logs service acting on behalf of ANY log group in ANY account, not just log groups in this one. AWS's own documented mitigation is an ArnLike condition on kms:EncryptionContext:aws:logs:arn. HLD_AWS_292 only inspects the key policy for wildcard principals and HLD_AWS_214 only checks that a policy exists at all, so neither engine rule looks at whether a service-principal grant is conditioned.",
+      "file": "example/examplea/aws_kms_key.cloudwatch_logs.tf",
+      "first_seen": "2026-08-20",
+      "fix": "Condition = {\n  ArnLike = {\n    \"kms:EncryptionContext:aws:logs:arn\" = \"arn:aws:logs:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:log-group:*\"\n  }\n}",
+      "fixable": true,
+      "id": "HOLDEN_AI_001",
+      "last_seen": "2026-08-20",
+      "line": 21,
+      "principle": "key-management",
+      "related_resources": [
+        "module.cloudwatch",
+        "aws_cloudwatch_log_group.logs"
+      ],
+      "remediation": "Add an ArnLike condition on kms:EncryptionContext:aws:logs:arn scoping the grant to log groups in this account and region.",
+      "resource": "aws_kms_key.cloudwatch_logs",
+      "severity": "HIGH",
+      "status": "fixed",
+      "supersedes": "HLD_AWS_214",
+      "suppression_reason": null,
+      "title": "KMS key policy grants the CloudWatch Logs service principal with no kms:EncryptionContext condition (confused-deputy)"
+    },
+    {
+      "confidence": "high",
+      "explanation": "Both workflows call JamesWoolfenden/.github at the mutable @main ref and carry an identical HLD_CI_017 suppression, but their blast radii are not comparable: pull_request.yml grants contents: read, while verify.yml grants id-token: write and contents: write. Caller permissions flow into the called workflow, so whatever lands on .github@main can mint an OIDC token to assume this repo's AWS deploy role and push to this repository. The engine evaluates each job in isolation and cannot see that one suppression rationale was copied onto a job with far greater privilege.",
+      "file": ".github/workflows/verify.yml",
+      "first_seen": "2026-08-20",
+      "fixable": false,
+      "id": "HOLDEN_AI_002",
+      "last_seen": "2026-08-20",
+      "line": 14,
+      "principle": "supply-chain",
+      "related_resources": [
+        "gha_job.pull_request.yml.pr"
+      ],
+      "remediation": "Pin verify.yml's uses: to a commit SHA (keeping @main on the read-only pull_request.yml if the convenience is worth it), or narrow the caller permissions to exactly what the reusable workflow consumes.",
+      "resource": "gha_job.verify.yml.verify",
+      "severity": "HIGH",
+      "status": "suppressed",
+      "supersedes": "HLD_CI_017",
+      "suppression_reason": "Won't fix - accepted by repo owner 2026-08-20. Tracking JamesWoolfenden/.github@main is deliberate so CI improvements land across all module repos without per-repo SHA bumps; the shared workflow repo is under the same owner as this one, so the trust boundary is self-owned rather than third-party.",
+      "title": "Deploy workflow delegates id-token:write + contents:write to a mutable @main reusable workflow, suppressed with the read-only workflow's reasoning"
+    },
+    {
+      "confidence": "high",
+      "explanation": "log_group_name defaults to \"test_logs\" in a module published to the Terraform registry. Any consumer who omits the variable silently creates a log group literally named test_logs, and two invocations in one account/region collide on that name. HLD_TF_020 catches placeholder identifiers in resource labels but not placeholder values in variable defaults, so no deterministic rule sees this.",
+      "file": "variables.tf",
+      "first_seen": "2026-08-20",
+      "fixable": false,
+      "id": "HOLDEN_AI_003",
+      "last_seen": "2026-08-20",
+      "line": 4,
+      "principle": "governance",
+      "related_resources": [
+        "aws_cloudwatch_log_group.logs"
+      ],
+      "remediation": "Remove the default so callers must name their log group, or change it to a non-colliding name derived from the module's purpose.",
+      "resource": "var.log_group_name",
+      "severity": "MEDIUM",
+      "status": "fixed",
+      "suppression_reason": null,
+      "title": "Published module ships a placeholder default log group name of \"test_logs\""
+    },
+    {
+      "confidence": "high",
+      "explanation": "kms_key_id is mandatory, and CloudWatch Logs cannot use a CMK whose key policy does not grant logs.<region>.amazonaws.com. The example carries that grant, but the module's README documents kms_key_id only as \"ARN of the KMS key\". A consumer supplying an otherwise valid key ARN gets an opaque apply-time InvalidParameterException rather than a plan-time error. This is a cross-resource contract the engine cannot check, since the key lives in the caller's configuration.",
+      "file": "aws_cloudwatch_log_group.logs.tf",
+      "first_seen": "2026-08-20",
+      "fixable": false,
+      "id": "HOLDEN_AI_004",
+      "last_seen": "2026-08-20",
+      "line": 4,
+      "principle": "reliability",
+      "related_resources": [
+        "var.kms_key_id",
+        "aws_kms_key.cloudwatch_logs"
+      ],
+      "remediation": "Document the required key policy statement in README.md alongside the kms_key_id input, referencing the example's key as the canonical shape.",
+      "resource": "aws_cloudwatch_log_group.logs",
+      "severity": "MEDIUM",
+      "status": "fixed",
+      "suppression_reason": null,
+      "title": "Module requires a CMK but neither documents nor validates the key policy grant that makes it usable"
+    },
+    {
+      "confidence": "high",
+      "explanation": "main.tf holds nothing but the comment \"# required\", which asserts something untrue: Terraform resolves every .tf file in a directory and has no required filename. The repo already follows a one-resource-per-descriptively-named-file convention (aws_cloudwatch_log_group.logs.tf), so the stub is dead weight that invites a future contributor to start dumping resources into it.",
+      "file": "main.tf",
+      "first_seen": "2026-08-20",
+      "fix": "<delete file main.tf>",
+      "fixable": true,
+      "id": "HOLDEN_AI_005",
+      "last_seen": "2026-08-20",
+      "line": 1,
+      "principle": "maintainability",
+      "related_resources": [],
+      "remediation": "Delete main.tf.",
+      "resource": "tf_file.main.tf",
+      "severity": "LOW",
+      "status": "fixed",
+      "suppression_reason": null,
+      "title": "main.tf is an empty stub containing only the comment \"# required\""
+    }
+  ],
+  "scan_date": "2026-08-20T00:00:00Z",
+  "scan_path": ".",
+  "suggested_policies": [
+    {
+      "rationale": "A KMS key policy statement that allows the CloudWatch Logs service principal (logs.<region>.amazonaws.com) with no Condition is a textbook confused-deputy grant, and AWS documents the exact mitigating condition (ArnLike on kms:EncryptionContext:aws:logs:arn). It is a fixed resource type, a fixed attribute path, and an unambiguous pass/fail, so it belongs in the deterministic engine. Existing aws_kms_key coverage (HLD_AWS_008/029/087/214/215/292/307) checks rotation, deletion window, policy presence, wildcard principals and key state - none inspects whether a service-principal grant is conditioned.",
+      "status": "implemented as HLD_AWS_317 in JamesWoolfenden/holden@9aca9aa",
+      "yaml": "id: HLD_PROPOSED_001\nname: KMS key policy must condition CloudWatch Logs service grants on an encryption context\nprinciple: key-management\nseverity: HIGH\nrationale: |\n  A key policy statement that allows logs.<region>.amazonaws.com to use the\n  key without a Condition authorises the CloudWatch Logs service acting on\n  behalf of any log group in any AWS account, because a service principal\n  carries no account identity. AWS documents an ArnLike condition on\n  kms:EncryptionContext:aws:logs:arn as the mitigation, scoping the grant to\n  log groups in a specific account and region. HLD_AWS_292 only detects\n  wildcard principals and HLD_AWS_214 only checks that a policy exists, so an\n  unconditioned service grant passes both.\nremediation: |\n  Add a Condition to the CloudWatch Logs statement scoping it to this account:\n\n    Condition = {\n      ArnLike = {\n        \"kms:EncryptionContext:aws:logs:arn\" = \"arn:aws:logs:REGION:ACCOUNT_ID:log-group:*\"\n      }\n    }\nresources:\n  aws_kms_key:\n    path: policy\n    json_decode: true\n    sub_path: Statement\n    not_any:\n      all:\n        - any:\n            - path: Effect\n              absent: true\n            - path: Effect\n              equals: Allow\n        - path: Principal.Service\n          matches: \"^logs\\\\.\"\n        - path: Condition\n          absent: true\n  aws_kms_key_policy:\n    path: policy\n    json_decode: true\n    sub_path: Statement\n    not_any:\n      all:\n        - any:\n            - path: Effect\n              absent: true\n            - path: Effect\n              equals: Allow\n        - path: Principal.Service\n          matches: \"^logs\\\\.\"\n        - path: Condition\n          absent: true\n"
+    }
+  ],
+  "suggested_suppressions": []
+}

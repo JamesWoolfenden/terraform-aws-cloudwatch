@@ -1,0 +1,79 @@
+{
+  "findings": [
+    {
+      "confidence": "high",
+      "explanation": "Both validate.sh and validate.ps1 end with `make valid` and `make cost`, but example/examplea/Makefile no longer defines either target \u2014 the checkov/tfsec/terrascan/kics `valid`, `compare` and infracost `cost` targets were removed in the working tree. The remaining targets are all/init/plan/planned/p/apply/build/convert/check/destroy/docs/target/purge. Running either script now fails at the first missing target, and validate.ps1 sets $ErrorActionPreference = 'Stop', so it aborts. The repo's own pre-push validation path is broken.",
+      "file": "validate.sh",
+      "first_seen": "2026-08-20",
+      "fix": "<remove the `make cost` and `make valid` lines from validate.sh and validate.ps1>",
+      "fixable": true,
+      "id": "HOLDEN_BP_001",
+      "last_seen": "2026-08-20",
+      "line": 6,
+      "principle": "reliability",
+      "remediation": "Drop the `make valid` and `make cost` lines from both scripts, or re-add equivalent targets to the example Makefile.",
+      "resource": "validate.sh / validate.ps1",
+      "severity": "MEDIUM",
+      "status": "fixed",
+      "title": "Repo validation entrypoints call Makefile targets that no longer exist"
+    },
+    {
+      "confidence": "high",
+      "explanation": "The provider pinned by the example (aws 6.43.0) supports deletion_protection_enabled on aws_cloudwatch_log_group, confirmed against `terraform providers schema -json`. The module neither sets it nor exposes it, so it defaults to false and consumers cannot turn it on without forking. With the module's own default retention of 365 days, a stray `terraform destroy`, a `log_group_name` change (which forces replacement), or a removed module block silently discards a year of logs, and CloudWatch Logs has no undelete. holden's HLD_TF_041 covers the lifecycle.prevent_destroy angle but does not list aws_cloudwatch_log_group, and prevent_destroy is bypassed entirely when the resource block is removed \u2014 the server-side flag is not.",
+      "file": "aws_cloudwatch_log_group.logs.tf",
+      "first_seen": "2026-08-20",
+      "fix": "variable \"deletion_protection\" {\n  description = \"Whether to protect the log group from deletion\"\n  type        = bool\n  default     = false\n}\n\n# in the resource:\ndeletion_protection_enabled = var.deletion_protection",
+      "fixable": true,
+      "id": "HOLDEN_BP_002",
+      "last_seen": "2026-08-20",
+      "line": 1,
+      "principle": "reliability",
+      "remediation": "Add a deletion_protection variable (default false to stay backwards-compatible) and wire it to deletion_protection_enabled.",
+      "resource": "aws_cloudwatch_log_group.logs",
+      "severity": "MEDIUM",
+      "status": "fixed",
+      "title": "Module does not expose deletion_protection_enabled on the log group"
+    },
+    {
+      "confidence": "high",
+      "explanation": "log_group_class exists on aws_cloudwatch_log_group in the pinned provider (verified via provider schema) and selects STANDARD or INFREQUENT_ACCESS. INFREQUENT_ACCESS costs roughly half the ingestion price and suits logs that are retained for compliance but rarely queried \u2014 precisely the profile implied by this module's 365-day default retention. Because the module omits the attribute entirely, every consumer silently gets STANDARD with no way to opt out short of forking.",
+      "file": "aws_cloudwatch_log_group.logs.tf",
+      "first_seen": "2026-08-20",
+      "fix": "variable \"log_group_class\" {\n  description = \"Log group class: STANDARD or INFREQUENT_ACCESS\"\n  type        = string\n  default     = \"STANDARD\"\n\n  validation {\n    condition     = contains([\"STANDARD\", \"INFREQUENT_ACCESS\"], var.log_group_class)\n    error_message = \"The log_group_class must be STANDARD or INFREQUENT_ACCESS.\"\n  }\n}\n\n# in the resource:\nlog_group_class = var.log_group_class",
+      "fixable": true,
+      "id": "HOLDEN_BP_003",
+      "last_seen": "2026-08-20",
+      "line": 1,
+      "principle": "cost",
+      "remediation": "Add a log_group_class variable defaulting to STANDARD (preserving current behaviour) with a validation restricting it to STANDARD or INFREQUENT_ACCESS, and wire it to the resource.",
+      "resource": "aws_cloudwatch_log_group.logs",
+      "severity": "LOW",
+      "status": "fixed",
+      "title": "Module does not expose log_group_class, pinning consumers to the STANDARD class"
+    },
+    {
+      "confidence": "high",
+      "explanation": "example/examplea is a deployable root config \u2014 CI runs init/plan/apply against it \u2014 so its .terraform.lock.hcl should be committed to pin provider hashes across runs. It is currently untracked. .gitignore line 24 is `/.terraform.lock.hcl`, anchored to the repo root, so it correctly ignores only the reusable module's lock file and is not what is keeping the example's out of git. This session's edits to validate.sh and validate.ps1 removed the lines that deleted .terraform.lock.hcl, which suggests the intent is already to retain it.",
+      "file": "example/examplea/.terraform.lock.hcl",
+      "first_seen": "2026-08-20",
+      "fixable": false,
+      "id": "HOLDEN_BP_004",
+      "last_seen": "2026-08-20",
+      "line": 1,
+      "principle": "repeatability",
+      "remediation": "git add example/examplea/.terraform.lock.hcl. Regenerate it with real Terraform first if CI does not use OpenTofu \u2014 the current file was written by OpenTofu and names registry.opentofu.org providers. BLOCKED 2026-08-20: no real Terraform binary on this machine \u2014 the `terraform` shim resolves to OpenTofu v1.12.1, and the current lock file was rewritten by it to registry.opentofu.org entries. Needs regenerating with real Terraform, or confirmation that CI runs OpenTofu.",
+      "resource": "example/examplea",
+      "severity": "LOW",
+      "status": "open",
+      "title": "The example's dependency lock file is not committed"
+    }
+  ],
+  "scan_date": "2026-08-20T00:00:00Z",
+  "scan_path": ".",
+  "suggested_policies": [
+    {
+      "rationale": "aws_cloudwatch_log_group gained a server-side deletion_protection_enabled flag, and holden has no policy for it \u2014 coverage_by_type lists only HLD_AWS_038, 039, 109 and 260 (retention and encryption). HLD_TF_041 covers lifecycle.prevent_destroy but does not include this resource type, and prevent_destroy is bypassed when the resource block itself is removed, whereas the provider flag is not. Log groups are the audit trail other controls depend on, so silent deletion is the failure mode worth catching. Fixed resource type, fixed attribute path, unambiguous pass/fail.",
+      "yaml": "id: HLD_AWS_NNN\nname: CloudWatch log groups should enable deletion protection\nprinciple: reliability\nseverity: LOW\nrationale: |\n  aws_cloudwatch_log_group.deletion_protection_enabled defaults to false, so a\n  stray destroy, a name change that forces replacement, or a removed module\n  block discards the group and every event in it. CloudWatch Logs has no\n  undelete and no snapshot, so the loss is unrecoverable, and log groups are\n  usually the audit trail that other controls are evidenced against.\n\n  lifecycle.prevent_destroy (HLD_TF_041) is a weaker guard for this case: it\n  only applies while the resource block still exists in the configuration, so\n  deleting the block bypasses it entirely. The provider-side flag is enforced\n  by AWS regardless of what the configuration says.\nremediation: |\n  Set deletion_protection_enabled on the log group:\n\n    resource \"aws_cloudwatch_log_group\" \"logs\" {\n      name                        = \"/aws/my-application\"\n      retention_in_days           = 365\n      deletion_protection_enabled = true\n    }\n\n  For genuinely ephemeral log groups (test fixtures, examples that CI destroys),\n  suppress with a holden:ignore annotation rather than leaving it unset.\nresources:\n  aws_cloudwatch_log_group:\n    path: deletion_protection_enabled\n    equals: true\n"
+    }
+  ]
+}
